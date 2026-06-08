@@ -185,7 +185,6 @@ export default function MultipartForm({
         } \nPhone Number: ${formData.phone} \n Pick Up Address: ${formData.pickUpAddress
         }\n Drop Off Address: ${formData.dropOffAddress}
       \nProperty Type: ${formData.propertyType}
-       \nMove Date: ${formattedDate}
        \nServices Required: ${formData["service"].join(", ")} \n Message: ${formData.message
         } `,
       portalID: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,

@@ -3,6 +3,9 @@ import crypto from "crypto";
 const GOOGLE_ADS_API_VERSION = process.env.GOOGLE_ADS_API_VERSION || "v21";
 const GOOGLE_ADS_AUTH_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_ADS_API_URL = `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}`;
+const GOOGLE_ADS_API_MAJOR_VERSION = Number(
+  GOOGLE_ADS_API_VERSION.replace(/^v/i, "")
+);
 
 function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
@@ -185,7 +188,7 @@ export async function uploadGoogleAdsClickConversion({
         conversions: [conversion],
         partialFailure: true,
         validateOnly,
-        debugEnabled,
+        ...(GOOGLE_ADS_API_MAJOR_VERSION <= 20 ? { debugEnabled } : {}),
       }),
     }
   );

@@ -88,6 +88,10 @@ function stripHtml(html = "") {
   return String(html).replace(/<[^>]*>/g, "").trim();
 }
 
+function isMapReady(map) {
+  return Boolean(map?._container);
+}
+
 export default function LocationsCovered({
   title,
   description,
@@ -115,6 +119,7 @@ export default function LocationsCovered({
 
   useEffect(() => {
     let cancelled = false;
+    let frameId;
     let map;
 
     async function initMap() {
@@ -163,6 +168,7 @@ export default function LocationsCovered({
             .bindPopup(label);
 
           marker.on("click", () => {
+            if (!isMapReady(map)) return;
             setActiveLocation(label);
             map.flyTo(coordinates, 13, { duration: 0.55 });
           });
@@ -173,12 +179,21 @@ export default function LocationsCovered({
 
         markersRef.current = nextMarkers;
 
+        await new Promise((resolve) => {
+          frameId = window.requestAnimationFrame(resolve);
+        });
+
+        if (cancelled || !isMapReady(map)) return;
+
+        map.invalidateSize({ animate: false });
+
         if (bounds.length > 1) {
-          map.fitBounds(bounds, { padding: [36, 36] });
+          map.fitBounds(bounds, { padding: [36, 36], animate: false });
         } else if (bounds.length === 1) {
-          map.setView(bounds[0], 13);
+          map.setView(bounds[0], 13, { animate: false });
         }
-      } catch {
+      } catch (error) {
+        console.error("Leaflet map failed to initialize", error);
         setMapError("Map failed to load.");
       }
     }
@@ -187,8 +202,14 @@ export default function LocationsCovered({
 
     return () => {
       cancelled = true;
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      markersRef.current.forEach((marker) => marker.off());
       markersRef.current = [];
-      if (map) {
+      mapInstanceRef.current = null;
+      if (map && isMapReady(map)) {
+        map.stop();
         map.remove();
       }
     };
@@ -201,7 +222,7 @@ export default function LocationsCovered({
     );
     const map = mapInstanceRef.current;
 
-    if (!marker || !map) return;
+    if (!marker || !isMapReady(map)) return;
 
     map.flyTo(marker.getLatLng(), 13, { duration: 0.55 });
     marker.openPopup();
