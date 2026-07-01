@@ -27,13 +27,13 @@ const STEPS = [
   },
   {
     number: 2,
-    label: "Contact",
-    fields: ["propertyType", "service"],
+    label: "Property",
+    fields: ["date", "propertyType",  "service"],
     title: "Tell us about the property.",
   },
   {
     number: 3,
-    label: "Extra Details",
+    label: "contact",
     fields: ["firstname", "email", "phone", "message"],
     title: "Contact details and any special requirements.",
   },
@@ -72,7 +72,7 @@ export default function MultipartForm({
   // click id
   const { clickIds } = useClickIds();
   const handleChange = (id, value, isSelectMultiple) => {
-    let newValue = value.target ? value.target.value : value;
+    let newValue = value?.target ? value.target.value : value;
 
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -172,7 +172,9 @@ export default function MultipartForm({
     const firstName = parts[0] || "";
     const lastName = parts.slice(1).join(" ") || ""; // everything after firstName
 
-    let formattedDate = dayjs(formData.datePicker).valueOf();
+    const preferredDate = formData.date
+      ? dayjs(formData.date).format("DD/MM/YYYY")
+      : "";
     const transactionId =
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -185,6 +187,7 @@ export default function MultipartForm({
         } \nPhone Number: ${formData.phone} \n Pick Up Address: ${formData.pickUpAddress
         }\n Drop Off Address: ${formData.dropOffAddress}
       \nProperty Type: ${formData.propertyType}
+       \nPreferred Date: ${preferredDate || "Not specified"}
        \nServices Required: ${formData["service"].join(", ")} \n Message: ${formData.message
         } `,
       portalID: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID,
@@ -220,7 +223,7 @@ export default function MultipartForm({
         { name: "pick_up_address", value: formData.pickUpAddress },
         { name: "drop_off_address", value: formData.dropOffAddress },
         { name: "property_type", value: formData.propertyType },
-        { name: "move_date", value: "null" },
+        { name: "move_date", value: preferredDate },
         { name: "services_required", value: formData["service"].join(", ") },
         { name: "message", value: formData.message },
       ],

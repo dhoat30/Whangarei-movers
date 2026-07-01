@@ -82,6 +82,12 @@ export const getQuoteFormData = [
         multiple: false
     },
     {
+        id: 'date',
+        label: 'Preferred date',
+        type: 'datePicker',
+        required: false,
+    },
+    {
         id: 'service',
         label: 'Service required',
         type: 'chip', // or 'radio' for single selection
